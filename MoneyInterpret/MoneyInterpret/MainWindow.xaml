@@ -1,0 +1,77 @@
+﻿<Window x:Class="MoneyInterpret.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MoneyInterpret"
+        xmlns:converters="clr-namespace:MoneyInterpret.Converters"
+        mc:Ignorable="d"
+        Title="Money Interpret" Height="600" Width="1000">
+    <Window.Resources>
+        <converters:AmountColorConverter x:Key="AmountColorConverter"/>
+    </Window.Resources>
+    <Grid>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <Menu Grid.Row="0">
+            <MenuItem Header="File">
+                <MenuItem Header="Import CSV Files..." Click="ImportFiles_Click"/>
+                <Separator/>
+                <MenuItem Header="Exit" Click="Exit_Click"/>
+            </MenuItem>
+        </Menu>
+        
+        <DataGrid Grid.Row="1" 
+                  ItemsSource="{Binding Transactions}" 
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  CanUserSortColumns="True"
+                  AlternatingRowBackground="AliceBlue"
+                  Name="TransactionsGrid">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Account" Binding="{Binding AccountNumber}" Width="Auto"/>
+                <DataGridTextColumn Header="Date" Binding="{Binding PostDate, StringFormat=\{0:MM/dd/yyyy\}}" Width="Auto"/>
+                <DataGridTextColumn Header="Check #" Binding="{Binding CheckNum}" Width="Auto"/>
+                <DataGridTextColumn Header="Description" Binding="{Binding Description}" Width="*"/>
+                <DataGridTextColumn Header="Amount" Binding="{Binding Amount, StringFormat=\{0:C\}}" Width="Auto">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Amount}" Value="0">
+                                    <Setter Property="Foreground" Value="Black"/>
+                                </DataTrigger>
+                                <Trigger Property="Text" Value="">
+                                    <Setter Property="Foreground" Value="Black"/>
+                                </Trigger>
+                                <DataTrigger Binding="{Binding Amount, Converter={StaticResource AmountColorConverter}}" Value="True">
+                                    <Setter Property="Foreground" Value="Red"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Amount, Converter={StaticResource AmountColorConverter}}" Value="False">
+                                    <Setter Property="Foreground" Value="Green"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                            <Setter Property="HorizontalAlignment" Value="Right"/>
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="Auto"/>
+                <DataGridTextColumn Header="Balance" Binding="{Binding Balance, StringFormat=\{0:C\}}" Width="Auto">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="HorizontalAlignment" Value="Right"/>
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+        
+        <StatusBar Grid.Row="2">
+            <TextBlock Text="{Binding Transactions.Count, StringFormat=Total Transactions: {0}}"/>
+        </StatusBar>
+    </Grid>
+</Window>
