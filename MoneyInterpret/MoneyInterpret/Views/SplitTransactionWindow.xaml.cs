@@ -2,123 +2,156 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Windows;
+using System.Windows.Controls;
 using MoneyInterpret.Models;
 
 namespace MoneyInterpret.Views
 {
     public partial class SplitTransactionWindow : Window
     {
+        public ObservableCollection<string> AvailableAccounts { get; set; } = new ObservableCollection<string>();
         public ObservableCollection<Transaction> OriginalTransactions { get; set; } = new ObservableCollection<Transaction>();
         public ObservableCollection<Transaction> SplitTransactions { get; set; } = new ObservableCollection<Transaction>();
-        public ObservableCollection<string> AvailableAccounts { get; set; } = new ObservableCollection<string>();
         
         private List<Transaction> _allTransactions;
+        private List<Regex> _splittablePatterns;
 
-        public SplitTransactionWindow(IEnumerable<Transaction> allTransactions)
+        public SplitTransactionWindow(List<Transaction> transactions)
         {
             InitializeComponent();
             DataContext = this;
-            _allTransactions = allTransactions.ToList();
+            
+            _allTransactions = transactions;
+            
+            // Initialize regex patterns for matching splittable transactions
+            _splittablePatterns = new List<Regex>
+            {
+                new Regex(@"Interest:\s*\$?(\d+\.\d+);\s*Extra\s*Principal:\s*\$?(\d+\.\d+)", RegexOptions.IgnoreCase),
+                // Add more patterns as needed
+            };
             
             // Populate available accounts
-            var accounts = _allTransactions
+            var accounts = transactions
                 .Select(t => t.AccountNumber)
-                .Where(a => !string.IsNullOrEmpty(a))
                 .Distinct()
                 .OrderBy(a => a)
                 .ToList();
-                
+            
             foreach (var account in accounts)
             {
                 AvailableAccounts.Add(account);
             }
         }
 
-        private void AccountsListBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
-        {
-            UpdateOriginalTransactions();
-        }
-
-        private void UpdateOriginalTransactions()
+        private void AccountsListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             OriginalTransactions.Clear();
             SplitTransactions.Clear();
             
-            var selectedAccounts = AccountsListBox.SelectedItems.Cast<string>().ToList();
-            if (selectedAccounts.Count == 0)
+            if (AccountsListBox.SelectedItem == null)
                 return;
                 
-            var filteredTransactions = _allTransactions
-                .Where(t => selectedAccounts.Contains(t.AccountNumber))
-                .OrderByDescending(t => t.PostDate)
+            string selectedAccount = AccountsListBox.SelectedItem.ToString();
+            
+            // Filter transactions by the selected account
+            var accountTransactions = _allTransactions
+                .Where(t => t.AccountNumber == selectedAccount)
                 .ToList();
                 
-            foreach (var transaction in filteredTransactions)
+            // Find splittable transactions
+            foreach (var transaction in accountTransactions)
             {
-                OriginalTransactions.Add(transaction);
-            }
-        }
-
-        private void SplitButton_Click(object sender, RoutedEventArgs e)
-        {
-            var selectedTransaction = OriginalTransactionsGrid.SelectedItem as Transaction;
-            if (selectedTransaction == null)
-            {
-                MessageBox.Show("Please select a transaction to split.", "No Transaction Selected", 
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
+                if (IsSplittableTransaction(transaction))
+                {
+                    OriginalTransactions.Add(transaction);
+                }
             }
             
-            var splitWindow = new SplitAmountWindow(selectedTransaction);
-            if (splitWindow.ShowDialog() == true)
+            // Automatically split transactions
+            if (OriginalTransactions.Count > 0)
             {
-                // Create the split transactions
-                var principalAmount = splitWindow.PrincipalAmount;
-                var interestAmount = splitWindow.InterestAmount;
-                
-                // Create principal transaction (modify the original)
-                var principalTransaction = new Transaction
+                foreach (var transaction in OriginalTransactions)
                 {
-                    AccountNumber = selectedTransaction.AccountNumber,
-                    PostDate = selectedTransaction.PostDate,
-                    CheckNum = selectedTransaction.CheckNum,
-                    Description = $"Extra Principal: ${Math.Abs(principalAmount):F2}",
-                    Amount = principalAmount,
-                    Status = selectedTransaction.Status,
-                    Balance = selectedTransaction.Balance
-                };
-                
-                // Create interest transaction
-                var interestTransaction = new Transaction
-                {
-                    AccountNumber = selectedTransaction.AccountNumber,
-                    PostDate = selectedTransaction.PostDate,
-                    CheckNum = selectedTransaction.CheckNum,
-                    Description = $"SPLIT Interest Paid: ${Math.Abs(interestAmount):F2}",
-                    Amount = interestAmount,
-                    Status = selectedTransaction.Status,
-                    Balance = null // Balance would be different for this split transaction
-                };
-                
-                // Add to split transactions
-                SplitTransactions.Add(principalTransaction);
-                SplitTransactions.Add(interestTransaction);
-                
-                // Remove the original from the display
-                OriginalTransactions.Remove(selectedTransaction);
+                    var splitResult = SplitTransaction(transaction);
+                    foreach (var splitTrans in splitResult)
+                    {
+                        SplitTransactions.Add(splitTrans);
+                    }
+                }
             }
+        }
+        
+        private bool IsSplittableTransaction(Transaction transaction)
+        {
+            if (string.IsNullOrEmpty(transaction.Description))
+                return false;
+        
+            // Skip transactions that have already been split
+            if (transaction.Description.StartsWith("WHOLE:") || transaction.Description.StartsWith("SPLIT:"))
+                return false;
+        
+            foreach (var pattern in _splittablePatterns)
+            {
+                if (pattern.IsMatch(transaction.Description))
+                    return true;
+            }
+    
+            return false;
+        }
+
+        
+        private List<Transaction> SplitTransaction(Transaction original)
+        {
+            var result = new List<Transaction>();
+            
+            // Create a copy of the original transaction for the whole amount
+            var wholeTransaction = new Transaction
+            {
+                AccountNumber = original.AccountNumber,
+                PostDate = original.PostDate,
+                CheckNum = original.CheckNum,
+                Description = "WHOLE: " + original.Description,
+                Amount = original.Amount,
+                Status = original.Status,
+                Balance = original.Balance
+            };
+            
+            // Extract interest amount using regex
+            foreach (var pattern in _splittablePatterns)
+            {
+                var match = pattern.Match(original.Description);
+                if (match.Success && match.Groups.Count >= 3)
+                {
+                    if (decimal.TryParse(match.Groups[1].Value, out decimal interestAmount))
+                    {
+                        // Create interest transaction (negative to back out the interest)
+                        var interestTransaction = new Transaction
+                        {
+                            AccountNumber = original.AccountNumber,
+                            PostDate = original.PostDate,
+                            CheckNum = original.CheckNum,
+                            Description = "SPLIT: Interest",
+                            Amount = -interestAmount,  // Negative amount to back out the interest
+                            Status = original.Status
+                        };
+                        
+                        result.Add(wholeTransaction);
+                        result.Add(interestTransaction);
+                        return result;
+                    }
+                }
+            }
+            
+            // If we couldn't split it, just return the original
+            result.Add(original);
+            return result;
         }
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            if (SplitTransactions.Count == 0)
-            {
-                MessageBox.Show("No transactions have been split.", "No Changes", 
-                    MessageBoxButton.OK, MessageBoxImage.Information);
-                return;
-            }
-            
+            // Return the split transactions
             DialogResult = true;
             Close();
         }

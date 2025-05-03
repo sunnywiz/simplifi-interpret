@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:MoneyInterpret.Views"
         xmlns:converters="clr-namespace:MoneyInterpret.Converters"
         mc:Ignorable="d"
-        Title="Split Interest and Principal" Height="600" Width="1000">
+        Title="Split Interest and Principal" Height="600" Width="800">
     <Window.Resources>
         <converters:AmountColorConverter x:Key="AmountColorConverter"/>
     </Window.Resources>
@@ -24,21 +24,20 @@
             </Grid.ColumnDefinitions>
             
             <StackPanel Grid.Column="0">
-                <TextBlock Text="Select Accounts:" FontWeight="Bold" Margin="0,0,0,5"/>
+                <TextBlock Text="Select Account:" FontWeight="Bold" Margin="0,0,0,5"/>
                 <ListBox Name="AccountsListBox" Height="100" 
                          ItemsSource="{Binding AvailableAccounts}" 
-                         SelectionMode="Multiple"
+                         SelectionMode="Single"
                          SelectionChanged="AccountsListBox_SelectionChanged"/>
             </StackPanel>
             
             <StackPanel Grid.Column="1" Margin="10,0,0,0">
                 <TextBlock Text="Instructions:" FontWeight="Bold" Margin="0,0,0,5"/>
                 <TextBlock TextWrapping="Wrap">
-                    1. Select one or more accounts from the list on the left.<LineBreak/>
-                    2. Select a transaction from the Original Transactions grid.<LineBreak/>
-                    3. Click the "Split Transaction" button to split it into principal and interest.<LineBreak/>
-                    4. Review the split transactions in the right grid.<LineBreak/>
-                    5. Click Save to apply the changes or Cancel to discard them.
+                    1. Select an account from the list on the left.<LineBreak/>
+                    2. All splittable transactions will appear in the Original Transactions grid.<LineBreak/>
+                    3. The split transactions will automatically appear in the right grid.<LineBreak/>
+                    4. Click Save to apply the changes or Cancel to discard them.
                 </TextBlock>
             </StackPanel>
         </Grid>
@@ -46,11 +45,10 @@
         <Grid Grid.Row="1" Margin="0,10,0,0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             
-            <Grid Grid.Column="0">
+            <Grid Grid.Column="0" Margin="0,0,5,0">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
@@ -66,9 +64,7 @@
                           CanUserSortColumns="True"
                           AlternatingRowBackground="AliceBlue">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Account" Binding="{Binding AccountNumber}" Width="Auto"/>
                         <DataGridTextColumn Header="Date" Binding="{Binding PostDate, StringFormat=\{0:MM/dd/yyyy\}}" Width="Auto"/>
-                        <DataGridTextColumn Header="Check #" Binding="{Binding CheckNum}" Width="Auto"/>
                         <DataGridTextColumn Header="Description" Binding="{Binding Description}" Width="*"/>
                         <DataGridTextColumn Header="Amount" Binding="{Binding Amount, StringFormat=\{0:C\}}" Width="Auto">
                             <DataGridTextColumn.ElementStyle>
@@ -91,16 +87,11 @@
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
-                        <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="Auto"/>
                     </DataGrid.Columns>
                 </DataGrid>
             </Grid>
             
-            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="10,0">
-                <Button Content="Split Transaction" Padding="10,5" Margin="0,0,0,10" Click="SplitButton_Click"/>
-            </StackPanel>
-            
-            <Grid Grid.Column="2">
+            <Grid Grid.Column="1" Margin="5,0,0,0">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
@@ -116,9 +107,7 @@
                           CanUserSortColumns="True"
                           AlternatingRowBackground="AliceBlue">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Account" Binding="{Binding AccountNumber}" Width="Auto"/>
                         <DataGridTextColumn Header="Date" Binding="{Binding PostDate, StringFormat=\{0:MM/dd/yyyy\}}" Width="Auto"/>
-                        <DataGridTextColumn Header="Check #" Binding="{Binding CheckNum}" Width="Auto"/>
                         <DataGridTextColumn Header="Description" Binding="{Binding Description}" Width="*"/>
                         <DataGridTextColumn Header="Amount" Binding="{Binding Amount, StringFormat=\{0:C\}}" Width="Auto">
                             <DataGridTextColumn.ElementStyle>
@@ -141,7 +130,6 @@
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
-                        <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="Auto"/>
                     </DataGrid.Columns>
                 </DataGrid>
             </Grid>

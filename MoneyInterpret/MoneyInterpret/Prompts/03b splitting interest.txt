@@ -1,0 +1,12 @@
+SplitAmountWindow.xaml MoneyInterpret Previous attempt at split tool got it wrong. SplitTransactionWindow.xaml  Change to: 
+* when the split transaction window comes up, change to single select the account
+* when you choose the account, ALL splittable transactions show up in the grid
+* splittable means matches the regex "Interest: ___; Extra Principal: __" - make this a list of regexes that get out key matches for Interest and Principal.  The exact string from the file is "Interest: $352.78; Extra Principal: $1451.27"
+* the single split button then splits all the transactions from the left grid to the right grid (not one at a time) 
+* definition of split is to keep one transaction as the entire amount being paid, and then create a second new transaction which backs out the interest part, on the same day.  rename the descriptions to be "SPLIT: " and then either Interest or Extra Principal 
+* delete code not used anymore
+
+Adjust the signs and the wording  If the original transaction was +500 and the description said interest 200 extra principal 300, then the new transactions should be "WHOLE: " +500 and "SPLIT: Interest" -200.  Also, the grids don't need to show the account number, Check, or Status - just date, description, amount.   Remove Split All Transactions Button, have it happen as soon as the account is selected - if its wrong the user will not save it. 
+
+Something needs to happen so that the "WHOLE:" records are not re-split later. 
+
