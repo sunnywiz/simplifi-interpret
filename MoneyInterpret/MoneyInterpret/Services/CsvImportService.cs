@@ -9,7 +9,7 @@ namespace MoneyInterpret.Services
 {
     public class CsvImportService
     {
-        public List<Transaction> ImportTransactions(string filePath)
+        public List<Transaction> ImportTransactions(string filePath, IEnumerable<Transaction> existingTransactions = null)
         {
             var transactions = new List<Transaction>();
             var lines = File.ReadAllLines(filePath);
@@ -29,6 +29,13 @@ namespace MoneyInterpret.Services
             {
                 // HELOC account format
                 transactions = ParseHelocFormat(lines);
+            }
+            
+            // Filter out duplicates if existing transactions were provided
+            if (existingTransactions != null && existingTransactions.Any())
+            {
+                var existingSet = new HashSet<Transaction>(existingTransactions);
+                transactions = transactions.Where(t => !existingSet.Contains(t)).ToList();
             }
             
             return transactions;

@@ -1,0 +1,10 @@
+CsvImportService.cs MoneyInterpret When reading in files, it should compare what its reading in with what has already been read and avoid duplicates.  A duplicate checking should be implemented at the Transaction.cs level and would include all fields including the balance, which is a great way to have two transactions coming in on the same day which look identical. Transaction.cs MainWindow.xaml.cs MainViewModel.cs 
+
+RESULT: 
+
+These changes implement:
+
+A Transaction class with proper equality comparison that considers all fields, including Balance
+An updated CsvImportService that can filter out duplicates when importing
+A modified MainWindow that tracks and reports on duplicates that were skipped during import
+The implementation ensures that transactions with identical fields (including Balance) are considered duplicates and won't be added multiple times when importing CSV files.

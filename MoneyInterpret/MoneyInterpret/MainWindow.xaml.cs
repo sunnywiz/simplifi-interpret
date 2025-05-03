@@ -40,17 +40,22 @@ namespace MoneyInterpret
 
             if (dialog.ShowDialog() == true)
             {
-                var allTransactions = new ObservableCollection<Transaction>();
+                var allTransactions = new List<Transaction>(_viewModel.Transactions);
+                int initialCount = allTransactions.Count;
+                int duplicatesSkipped = 0;
                 
                 foreach (var fileName in dialog.FileNames)
                 {
                     try
                     {
-                        var transactions = _importService.ImportTransactions(fileName);
-                        foreach (var transaction in transactions)
-                        {
-                            allTransactions.Add(transaction);
-                        }
+                        // Pass existing transactions to avoid duplicates
+                        var newTransactions = _importService.ImportTransactions(fileName, allTransactions);
+                        
+                        // Track how many duplicates were skipped
+                        var potentialTransactions = _importService.ImportTransactions(fileName);
+                        duplicatesSkipped += potentialTransactions.Count - newTransactions.Count;
+                        
+                        allTransactions.AddRange(newTransactions);
                     }
                     catch (Exception ex)
                     {
@@ -63,7 +68,12 @@ namespace MoneyInterpret
                 var sorted = allTransactions.OrderByDescending(t => t.PostDate).ToList();
                 _viewModel.Transactions = new ObservableCollection<Transaction>(sorted);
                 
-                MessageBox.Show($"Successfully imported {_viewModel.Transactions.Count} transactions.", 
+                int newTransactionsAdded = _viewModel.Transactions.Count - initialCount;
+                
+                MessageBox.Show($"Import complete:\n" +
+                                $"- {newTransactionsAdded} new transactions added\n" +
+                                $"- {duplicatesSkipped} duplicates skipped\n" +
+                                $"- {_viewModel.Transactions.Count} total transactions", 
                     "Import Complete", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
