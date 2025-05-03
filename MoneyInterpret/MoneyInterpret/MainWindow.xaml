@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MoneyInterpret"
         xmlns:converters="clr-namespace:MoneyInterpret.Converters"
+        xmlns:dgx="urn:tom-englert.de/DataGridExtensions"
         mc:Ignorable="d"
         Title="Money Interpret" Height="600" Width="1000">
     <Window.Resources>
@@ -24,6 +25,9 @@
                 <Separator/>
                 <MenuItem Header="Exit" Click="Exit_Click"/>
             </MenuItem>
+            <MenuItem Header="Tools">
+                <MenuItem Header="Split Interest and Principal..." Click="SplitInterestPrincipal_Click"/>
+            </MenuItem>
         </Menu>
         
         <DataGrid Grid.Row="1" 
@@ -32,12 +36,36 @@
                   IsReadOnly="True"
                   CanUserSortColumns="True"
                   AlternatingRowBackground="AliceBlue"
-                  Name="TransactionsGrid">
+                  Name="TransactionsGrid"
+                  dgx:DataGridFilter.IsAutoFilterEnabled="True">
+            <DataGrid.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Split Interest and Principal" Click="SplitInterestPrincipal_Click"/>
+                </ContextMenu>
+            </DataGrid.ContextMenu>
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Account" Binding="{Binding AccountNumber}" Width="Auto"/>
+                <DataGridTextColumn Header="Account" Binding="{Binding AccountNumber}" Width="Auto">
+                    <DataGridTextColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <DockPanel>
+                                <TextBlock DockPanel.Dock="Left" Text="Account"/>
+                                <dgx:DataGridFilterColumnControl/>
+                            </DockPanel>
+                        </DataTemplate>
+                    </DataGridTextColumn.HeaderTemplate>
+                </DataGridTextColumn>
                 <DataGridTextColumn Header="Date" Binding="{Binding PostDate, StringFormat=\{0:MM/dd/yyyy\}}" Width="Auto"/>
                 <DataGridTextColumn Header="Check #" Binding="{Binding CheckNum}" Width="Auto"/>
-                <DataGridTextColumn Header="Description" Binding="{Binding Description}" Width="*"/>
+                <DataGridTextColumn Header="Description" Binding="{Binding Description}" Width="*">
+                    <DataGridTextColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <DockPanel>
+                                <TextBlock DockPanel.Dock="Left" Text="Description"/>
+                                <dgx:DataGridFilterColumnControl/>
+                            </DockPanel>
+                        </DataTemplate>
+                    </DataGridTextColumn.HeaderTemplate>
+                </DataGridTextColumn>
                 <DataGridTextColumn Header="Amount" Binding="{Binding Amount, StringFormat=\{0:C\}}" Width="Auto">
                     <DataGridTextColumn.ElementStyle>
                         <Style TargetType="TextBlock">
