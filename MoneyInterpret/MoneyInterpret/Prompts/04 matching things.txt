@@ -1,0 +1,32 @@
+There are the file samples:  
+
+Account Number,Post Date,Check,Description,Debit,Credit,Status,Balance
+"XXXXXXX271",4/9/2025,,"297445 PURCHASE-SIG INTUIT *TURBOTAX CL.INTUIT.COM CA 67224506 297445",363.68,,Posted,2352.05
+"XXXXXXX271",4/9/2025,,"PNCBK CK WEBXFR P2P SUNJEEV . GULAT",,504.04,Posted,2715.73
+"XXXXXXX271",4/9/2025,,"PNCBK CK WEBXFR P2P MOLLY J MCMAHAN",,150.00,Posted,2211.69
+"XXXXXXX271",4/8/2025,,"Tax",,1056.00,Posted,2061.69
+"XXXXXXX271",4/4/2025,,"Internet Transfer to xxx1040",1804.05,,Posted,1005.69
+"XXXXXXX271",4/4/2025,,"Internet Transfer to xxx7114",204.05,,Posted,2809.74
+"XXXXXXX271",3/11/2025,,"Will",,500.00,Posted,1057.58
+
+separate file for HELOC account also from Stockyards Bank: 
+
+Account Number,Post Date,Check,Description,Debit,Credit,Status
+"XXXXXXX040",4/4/2025,," Interest: $352.78; Extra Principal: $1451.27",,1804.05,Posted
+"XXXXXXX040",3/11/2025,," Principal Advance: $500.00",500.00,,Posted
+
+Modify Transaction.cs to have a Label which is initially empty
+
+Note two transactions above:  3/11/2025
+in XXXXXXX040 Principal Advance for $500
+in XXXXXXX271 Will for $500  
+These are two ends of the same transaction. 
+
+Write tool called "Match Advances" which looks for "Principal Advance: " across all transactions, and looks for a matching transaction in the opposite direction in another account on the same day.  If its found, set the Label field in the Principal Advance transaction to the values of the description (in this example, "Will")
+
+If a label cound not be matched, set the Label to "Unknown Advance"
+
+The Match Advances tool should just run, it does not need a separate UI, its only changing labels. 
+
+Add the label to the main grid
+

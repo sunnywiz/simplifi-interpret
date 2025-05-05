@@ -11,6 +11,7 @@ namespace MoneyInterpret.Models
         public decimal Amount { get; set; }
         public string Status { get; set; }
         public decimal? Balance { get; set; }
+        public string Label { get; set; } = string.Empty;
 
         public bool Equals(Transaction other)
         {

@@ -147,6 +147,20 @@ namespace MoneyInterpret
             }
         }
 
+        // Add this method to the MainWindow class
+        private void MatchAdvances_Click(object sender, RoutedEventArgs e)
+        {
+            var matchService = new MatchAdvancesService();
+            int matchCount = matchService.MatchAdvances(_viewModel.Transactions.ToList());
+    
+            // Refresh the view
+            var transactions = _viewModel.Transactions.ToList();
+            _viewModel.Transactions = new ObservableCollection<Transaction>(transactions);
+    
+            MessageBox.Show($"Matching complete: {matchCount} advances matched.", 
+                "Match Advances", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
 
     }
 }

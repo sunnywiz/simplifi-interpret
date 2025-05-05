@@ -27,6 +27,7 @@
             </MenuItem>
             <MenuItem Header="Tools">
                 <MenuItem Header="Split Interest and Principal..." Click="SplitInterestPrincipal_Click"/>
+                <MenuItem Header="Match Advances" Click="MatchAdvances_Click"/>
             </MenuItem>
         </Menu>
         
@@ -88,6 +89,18 @@
                     </DataGridTextColumn.ElementStyle>
                 </DataGridTextColumn>
                 <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="Auto"/>
+
+                <DataGridTextColumn Header="Label" Binding="{Binding Label}" Width="Auto">
+                    <DataGridTextColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <DockPanel>
+                                <TextBlock DockPanel.Dock="Left" Text="Label"/>
+                                <dgx:DataGridFilterColumnControl/>
+                            </DockPanel>
+                        </DataTemplate>
+                    </DataGridTextColumn.HeaderTemplate>
+                </DataGridTextColumn>
+
                 <DataGridTextColumn Header="Balance" Binding="{Binding Balance, StringFormat=\{0:C\}}" Width="Auto">
                     <DataGridTextColumn.ElementStyle>
                         <Style TargetType="TextBlock">
